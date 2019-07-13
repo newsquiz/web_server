@@ -1,0 +1,5 @@
+HOST = '0.0.0.0'
+PORT = 5000
+MONGO_URI = 'mongodb://localhost:27017/agc2019'
+STATIC_FOLDER = 'static'
+PUBLIC_FOLDER = STATIC_FOLDER
