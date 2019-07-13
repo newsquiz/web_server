@@ -7,7 +7,7 @@ from configs import constants
 
 def generate_filename():
     fname = uuid.uuid5(uuid.NAMESPACE_OID, str(datetime.now()))
-    return str(fname)
+    return str(fname).replace('-', '')
 
 
 def get_save_path(filename):

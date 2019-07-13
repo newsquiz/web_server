@@ -22,7 +22,7 @@ def get_topic_articles(topic):
     for art in articles:
         tmp_art = {}
         for key in art:
-            if key not in ['content', '_id']:
+            if key not in ['content', '_id', 'audio']:
                 tmp_art[key] = art[key]
         filtered_articles.append(tmp_art)
     return utils.response(200, 'Success', list(filtered_articles))
