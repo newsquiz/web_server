@@ -3,30 +3,48 @@ from pymongo import MongoClient
 import datetime
 import numpy as np
 from utils import generate_filename
+import random 
 
-
+topics  = ['economy', 'society', 'sports', 'recommended', 'politics']
+levels = ['easy', 'medium', 'hard']
+publishers = ['wsj', 'bbc', 'kenh14']
 articles = [
     {
         'id': generate_filename(),
-        'topic': 'society',
+        'topic': random.choice(topics),
         'created_time': datetime.datetime.utcnow(),
-        'thumbnail': 'http://localhost:5000/images/1.jpg',
+        'thumbnail': 'https://cdn.vuetifyjs.com/images/cards/docks.jpg',
         'type': 'text',
         'title': 'How to win a hackathon challenge?',
         'content': 'Template content',
-        'level': 'medium'
-    },
-    {
-        'id': generate_filename(),
-        'topic': 'study',
-        'created_time': datetime.datetime.utcnow(),
-        'thumbnail': 'http://localhost:5000/images/2.jpg',
-        'type': 'audio',
-        'title': 'How to spend money after winning a hackathon challenge?',
-        'content': 'Template content',
-        'level': 'hard'
-    }
+        'publisher': random.choice(publishers),
+        'source_url': 'https://www.bbc.co.uk/',
+        'level': random.choice(levels)
+    } for _ in range(200)
 ]
+
+# articles = [
+#     {
+#         'id': generate_filename(),
+#         'topic': 'society',
+#         'created_time': datetime.datetime.utcnow(),
+#         'thumbnail': 'https://cdn.vuetifyjs.com/images/cards/docks.jpg',
+#         'type': 'text',
+#         'title': 'How to win a hackathon challenge?',
+#         'content': 'Template content',
+#         'level': 'medium'
+#     },
+#     {
+#         'id': generate_filename(),
+#         'topic': 'study',
+#         'created_time': datetime.datetime.utcnow(),
+#         'thumbnail': 'https://cdn.vuetifyjs.com/images/cards/docks.jpg',
+#         'type': 'audio',
+#         'title': 'How to spend money after winning a hackathon challenge?',
+#         'content': 'Template content',
+#         'level': 'hard'
+#     }
+# ]
 
 questions = [
     {
