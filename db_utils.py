@@ -68,12 +68,12 @@ def save_article(article):
 if __name__ == '__main__':
     sample_input = {
         "topic": "society",
-        "thumbnail": "data/xb.jpg",
+        "thumbnail": "data/cat.jpg",
         "type": "audio",
         "title": "How to spend money after winning hackathon challenge?",
         "level": "medium",
         "content": "<div></div>",
-        "audio": "data/die.wav",
+        "audio": "data/0_12.wav",
         "publisher":"bbc",
         "source_url": "https://www.bbc.co.uk/",
         "questions": [{
