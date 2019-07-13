@@ -36,6 +36,6 @@ def get_article_details(article_id):
     questions = mongo.db.questions.find({'article_id': article_id})
     ret = {'questions': list(questions)}
     for key in article:
-        if key not in []:
+        if key not in ['_id']:
             ret[key] = article[key]
     return utils.response(200, 'Success', dict(ret))
