@@ -8,13 +8,15 @@ import random
 topics  = ['economy', 'society', 'sports', 'recommended', 'politics']
 levels = ['easy', 'medium', 'hard']
 publishers = ['wsj', 'bbc', 'kenh14']
+types = ['text', 'audio']
 articles = [
     {
         'id': generate_filename(),
         'topic': random.choice(topics),
         'created_time': datetime.datetime.utcnow(),
         'thumbnail': 'https://cdn.vuetifyjs.com/images/cards/docks.jpg',
-        'type': 'text',
+        'type': random.choice(types),
+        'audio': 'http://localhost:5000/audios/audio.mp3',
         'title': 'How to win a hackathon challenge?',
         'content': 'Template content',
         'publisher': random.choice(publishers),
