@@ -40,7 +40,7 @@ def save_article(article):
 
     # Save thumbnail image
     if 'thumbnail' in article and article['thumbnail'] != '':
-        if 'http' not in article['thumbnail']:
+        if article['thumbnail'][:4] == 'http':
             thumbnail_path = get_save_path(generate_filename()[:8] + '.' \
                                                 + article['thumbnail'].split('.')[-1])
             shutil.copyfile(article['thumbnail'], thumbnail_path)
@@ -50,7 +50,7 @@ def save_article(article):
 
     # Save audio file
     if 'audio' in article and article['audio'] != '':
-        if and 'http' not in article['audio']:
+        if article['audio'][:4] == 'http':
             audio_path = get_save_path(generate_filename()[:8] + '.' \
                                                 + article['audio'].split('.')[-1])
             shutil.copyfile(article['audio'], audio_path)
