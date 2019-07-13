@@ -40,17 +40,23 @@ def save_article(article):
 
     # Save thumbnail image
     if 'thumbnail' in article and article['thumbnail'] != '':
-        thumbnail_path = get_save_path(generate_filename()[:8] + '.' \
-                                            + article['thumbnail'].split('.')[-1])
-        shutil.copyfile(article['thumbnail'], thumbnail_path)
-        final_article['thumbnail'] = '/' + thumbnail_path
+        if 'http' not in article['thumbnail']:
+            thumbnail_path = get_save_path(generate_filename()[:8] + '.' \
+                                                + article['thumbnail'].split('.')[-1])
+            shutil.copyfile(article['thumbnail'], thumbnail_path)
+            final_article['thumbnail'] = '/' + thumbnail_path
+        else:
+            final_article['thumbnail'] = article['thumbnail']
 
     # Save audio file
     if 'audio' in article and article['audio'] != '':
-        audio_path = get_save_path(generate_filename()[:8] + '.' \
-                                            + article['audio'].split('.')[-1])
-        shutil.copyfile(article['audio'], audio_path)
-        final_article['audio'] = '/' + audio_path
+        if and 'http' not in article['audio']:
+            audio_path = get_save_path(generate_filename()[:8] + '.' \
+                                                + article['audio'].split('.')[-1])
+            shutil.copyfile(article['audio'], audio_path)
+            final_article['audio'] = '/' + audio_path
+        else:
+            final_article['audio'] = article['audio']
 
     # Save article to db
     db.articles.insert_one(final_article)
