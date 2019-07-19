@@ -77,7 +77,7 @@ def search():
     return utils.response(200, 'Success', data)
 
 
-@app.route('/api/recommend/article', methods=['GET'])
+@app.route('/api/recommend/articles', methods=['GET'])
 def recommend():
     num_item = int(get_querystr('num_item', 3))
     articles = mongo.db.articles.aggregate([{'$sample': {'size': num_item}}])
