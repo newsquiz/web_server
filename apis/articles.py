@@ -25,7 +25,8 @@ def filter(data, ignores):
 def get_topic_articles(topic):
     start = int(get_querystr('start', 0))
     max_count = int(get_querystr('max_count', 10))
-    articles = mongo.db.articles.find({'topic': topic}) \
+    topic_search = {} if topic == 'new' else {'topic': topic}
+    articles = mongo.db.articles.find(topic_search) \
                     .sort([('created_time', pymongo.DESCENDING)]) \
                     .skip(start) \
                     .limit(max_count)
