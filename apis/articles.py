@@ -10,6 +10,17 @@ def get_querystr(key, default):
     return request.args.get(key) if key in request.args else default
 
 
+def filter(data, ignores):
+    filtered = []
+    for item in data:
+        tmp_item = {}
+        for key in item:
+            if key not in ignores:
+                tmp_item[key] = item[key]
+        filtered.append(tmp_item)
+    return filtered
+
+
 @app.route('/api/<topic>/articles', methods=['GET'])
 def get_topic_articles(topic):
     start = int(get_querystr('start', 0))
@@ -18,14 +29,8 @@ def get_topic_articles(topic):
                     .sort([('created_time', pymongo.DESCENDING)]) \
                     .skip(start) \
                     .limit(max_count)
-    filtered_articles = []
-    for art in articles:
-        tmp_art = {}
-        for key in art:
-            if key not in ['content', '_id', 'audio']:
-                tmp_art[key] = art[key]
-        filtered_articles.append(tmp_art)
-    return utils.response(200, 'Success', list(filtered_articles))
+    data = list(filter(articles, ['content', '_id', 'audio']))
+    return utils.response(200, 'Success', data)
 
 
 @app.route('/api/articles/<article_id>', methods=['GET'])
@@ -39,3 +44,43 @@ def get_article_details(article_id):
         if key not in ['_id']:
             ret[key] = article[key]
     return utils.response(200, 'Success', dict(ret))
+
+
+@app.route('/api/search', methods=['GET'])
+def search():
+    start = int(get_querystr('start', 0))
+    max_count = int(get_querystr('max_count', 10))
+    conditions = []
+    fields = ['title', 'level', 'publisher', 'type', 'topic', 'content']
+    for fld in fields:
+        query_str = get_querystr(fld, None)
+        if query_str is None:
+            continue
+        conditions.append({
+            fld: {
+                '$regex': '.*%s.*' % query_str,
+                '$options': 'i'
+            }    
+        })
+    if len(conditions) == 0:
+        conditions.append({
+            'title': {
+                '$regex': '.*'
+            }
+        })
+    articles = mongo.db.articles.find({'$or': conditions}) \
+                                .sort([('created_time', pymongo.DESCENDING)]) \
+                                .skip(start) \
+                                .limit(max_count)
+    
+    data = list(filter(articles, ['content', '_id', 'audio']))
+    return utils.response(200, 'Success', data)
+
+
+@app.route('/api/recommend/article', methods=['GET'])
+def recommend():
+    num_item = int(get_querystr('num_item', 3))
+    articles = mongo.db.articles.aggregate([{'$sample': {'size': num_item}}])
+    data = list(filter(articles, ['content', '_id', 'audio']))
+    return utils.response(200, 'Success', data)
+

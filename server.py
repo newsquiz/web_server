@@ -18,15 +18,15 @@ class JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='data')
 CORS(app)
 app.config.from_pyfile('configs/constants.py')
 mongo = PyMongo(app)
-flask_bcrypt = Bcrypt(app)
-app.config['JWT_SECRET_KEY'] = '!qaz@wsx#edc'
+bcrypt = Bcrypt(app)
 app.json_encoder = JSONEncoder
 
 from apis.articles import *
+from apis.users import *
 
 
 if __name__ == '__main__':
