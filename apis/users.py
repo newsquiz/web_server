@@ -1,5 +1,6 @@
-from server import app, mongo, bcrypt
+from api_server import app, mongo, bcrypt
 from flask import request
+from datetime import datetime
 import utils
 
 
@@ -49,15 +50,32 @@ def login():
 
 
 
-@app.route('/api/user_answer', methods=['POST'])
-def user():
-    user_id = request.headers.get('user_id')
+@app.route('/api/user_answers', methods=['POST'])
+def user_answer():
+    user_id = request.headers.get('User-Id')
+    if user_id is None:
+        return utils.response(400, 'Unauthorized')
     data = request.get_json()
-    # data = {
-    #     "article_id": "121212",
-    #     "answers": ["Thang", "Dung", "Tuan", "Lan", "Dat"],
-    #     "score": 8.5,
-    #     "user_id": user_id
-    # }
-    mongo.db.user_answer.insert_one(data)
-    return utils.response(200, "Success")
+    q_count = len(data['questions'])
+    correct_count = 0
+    saved_data = []
+    for ques, u_ans in zip(data['questions'], data['answers']):
+        r_answer = ques['answer']
+        is_correct = r_answer.lower() == u_ans.lower()
+        if is_correct:
+            correct_count += 1
+        tmp_data = {
+            'u_answer': u_ans,
+            'u_id': user_id,
+            'q_id': ques['id'],
+            'a_id': ques['article_id'],
+            "q_tags": ques['tags'],
+            'level': ques['level'],
+            'is_correct': is_correct,
+            'submited_time': datetime.utcnow()
+        }
+        saved_data.append(tmp_data)
+
+    mongo.db.user_answers.insert_many(saved_data)
+
+    return utils.response(200, "Success", {'sum': q_count, 'correct': correct_count})

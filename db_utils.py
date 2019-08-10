@@ -4,14 +4,15 @@ import random
 import os
 import uuid
 import shutil
+from configs import constants
 
 
 MONGO_HOST = 'localhost'
 MONGO_PORT = 27017
 MONGO_DB = 'agc2019'
 STATIC_FOLDER = 'static' # Change this path to webserver/static
-client = MongoClient(MONGO_HOST, MONGO_PORT)
-db = client[MONGO_DB]
+client = MongoClient(constants.MONGO_URI)
+db = client[constants.MONGO_DB]
 
 
 def generate_filename():
@@ -94,4 +95,10 @@ if __name__ == '__main__':
             "type": "choice"
         }]
     }
-    save_article(sample_input)
+    # save_article(sample_input)
+    tags = db.questions.find({}, {'type': 1})
+    all_ai = []
+    for item in tags:
+        all_ai.append(item['type'])
+    all_ai = set(all_ai)
+    print((all_ai))

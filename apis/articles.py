@@ -1,5 +1,5 @@
 from bson.objectid import ObjectId
-from server import app, mongo
+from api_server import app, mongo, question_recommender
 import pymongo
 from flask import request
 import datetime
@@ -26,6 +26,7 @@ def get_topic_articles(topic):
     start = int(get_querystr('start', 0))
     max_count = int(get_querystr('max_count', 10))
     topic_search = {} if topic == 'new' else {'topic': topic}
+    topic_search['flag'] = 1
     articles = mongo.db.articles.find(topic_search) \
                     .sort([('created_time', pymongo.DESCENDING)]) \
                     .skip(start) \
@@ -36,10 +37,12 @@ def get_topic_articles(topic):
 
 @app.route('/api/articles/<article_id>', methods=['GET'])
 def get_article_details(article_id):
+    user_id = request.headers.get('User-Id')
     article = mongo.db.articles.find_one({'id': article_id})
     if article is None:
         return utils.response(404, "Article not found", {})
-    questions = mongo.db.questions.find({'article_id': article_id})
+    questions = list(mongo.db.questions.find({'article_id': article_id}))
+    questions = question_recommender.recommend(questions, user_id)
     ret = {'questions': list(questions)}
     for key in article:
         if key not in ['_id']:
@@ -69,7 +72,7 @@ def search():
                 '$regex': '.*'
             }
         })
-    articles = mongo.db.articles.find({'$or': conditions}) \
+    articles = mongo.db.articles.find({'$or': conditions, 'flag': 1}) \
                                 .sort([('created_time', pymongo.DESCENDING)]) \
                                 .skip(start) \
                                 .limit(max_count)

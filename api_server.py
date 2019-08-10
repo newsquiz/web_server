@@ -1,10 +1,11 @@
 import json
-import datetime
+from datetime import datetime
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
 from bson.objectid import ObjectId
+from recommendation.recommender import QuestionRecommender
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -13,7 +14,7 @@ class JSONEncoder(json.JSONEncoder):
             return str(o)
         if isinstance(o, set):
             return list(o)
-        if isinstance(o, datetime.datetime):
+        if isinstance(o, datetime):
             return str(o)
         return json.JSONEncoder.default(self, o)
 
@@ -24,6 +25,7 @@ app.config.from_pyfile('configs/constants.py')
 mongo = PyMongo(app)
 bcrypt = Bcrypt(app)
 app.json_encoder = JSONEncoder
+question_recommender = QuestionRecommender()
 
 from apis.articles import *
 from apis.users import *

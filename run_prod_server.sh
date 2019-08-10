@@ -7,4 +7,4 @@ TIMEOUT=300
 
 
 echo "-----------START API SERVER-----------"
-gunicorn -b 0.0.0.0:$API_SERVER_PORT --worker-class eventlet -w $NUM_WORKER --threads $NUM_THREADS_PER_WORKER --timeout $TIMEOUT server:app
+gunicorn -b 0.0.0.0:$API_SERVER_PORT --worker-class eventlet -w $NUM_WORKER --threads $NUM_THREADS_PER_WORKER --timeout $TIMEOUT api_server:app
