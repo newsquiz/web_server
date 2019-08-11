@@ -144,10 +144,7 @@ class QuestionRecommender:
                 rcm_sent_ids.append(question['sent_id'])
         
         new_count = max_count - len(recommended)
-        if len(filtered_remaining) < new_count:
-            recommended.extend(filtered_remaining)
-        else:
-            recommended.extend(np.random.choice(filtered_remaining, new_count))
+        recommended.extend(filtered_remaining[:new_count])
         return sorted(recommended, key=lambda x: x['sent_id'])
         
 
