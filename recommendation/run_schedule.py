@@ -1,6 +1,6 @@
 import sys
 sys.path.append('recommendation')
-from recommender import QuestionRecommender
+from question_recommender import QuestionRecommender
 from configs import constants
 import schedule
 

@@ -5,7 +5,7 @@ from flask_cors import CORS
 from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
 from bson.objectid import ObjectId
-from recommendation.recommender import QuestionRecommender
+from recommendation.question_recommender import QuestionRecommender
 
 
 class JSONEncoder(json.JSONEncoder):
