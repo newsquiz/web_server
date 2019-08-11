@@ -43,6 +43,7 @@ def get_article_details(article_id):
         return utils.response(404, "Article not found", {})
     questions = list(mongo.db.questions.find({'article_id': article_id}))
     questions = question_recommender.recommend(questions, user_id)
+    questions = filter(questions, ['answer', 'explain'])
     ret = {'questions': list(questions)}
     for key in article:
         if key not in ['_id']:

@@ -56,10 +56,14 @@ def user_answer():
     data = request.get_json()
     q_count = len(data['questions'])
     correct_count = 0
-    saved_data = []
-    for ques, u_ans in zip(data['questions'], data['answers']):
+    saved_data, results, answers, explains = [], [], [], []
+    for ques_id, u_ans in zip(data['questions'], data['answers']):
+        ques = mongo.db.questions.find_one({'id': ques_id})
         r_answer = ques['answer']
         is_correct = r_answer.lower() == u_ans.lower()
+        results.append(is_correct)
+        answers.append(r_answer)
+        explains.append(ques['explain'] if 'explain' in ques else "")
         if is_correct:
             correct_count += 1
         tmp_data = {
@@ -77,4 +81,10 @@ def user_answer():
     if user_id is not None:
         mongo.db.user_answers.insert_many(saved_data)
 
-    return utils.response(200, "Success", {'sum': q_count, 'correct': correct_count})
+    return utils.response(200, "Success", {
+        'sum': q_count, 
+        'correct': correct_count, 
+        'results': results,
+        'answers': answers,
+        'explains': explains
+    })
