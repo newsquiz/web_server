@@ -31,7 +31,7 @@ def get_topic_articles(topic):
                     .sort([('created_time', pymongo.DESCENDING)]) \
                     .skip(start) \
                     .limit(max_count)
-    data = list(filter(articles, ['content', '_id', 'audio']))
+    data = list(filter(articles, ['content', '_id', 'audio', 'content_raw']))
     return utils.response(200, 'Success', data)
 
 
@@ -77,7 +77,7 @@ def search():
                                 .skip(start) \
                                 .limit(max_count)
     
-    data = list(filter(articles, ['content', '_id', 'audio']))
+    data = list(filter(articles, ['content', '_id', 'audio', 'content_raw']))
     return utils.response(200, 'Success', data)
 
 
@@ -85,6 +85,23 @@ def search():
 def recommend():
     num_item = int(get_querystr('num_item', 3))
     articles = mongo.db.articles.aggregate([{'$sample': {'size': num_item}}])
-    data = list(filter(articles, ['content', '_id', 'audio']))
+    data = list(filter(articles, ['content', '_id', 'audio', 'content_raw']))
     return utils.response(200, 'Success', data)
 
+
+def generate_questions(content):
+    return list(mongo.db.questions.find().skip(0).limit(50))
+
+
+@app.route('/api/generate_questions', methods=['POST'])
+def api_generate_questions():
+    user_id = request.headers.get('User-Id')
+    json_data = request.get_json()
+    if 'content' not in json_data or len(json_data['content']) < 20:
+        return utils.response(400, 'Content is not valid')
+    content = json_data['content']
+    num_sent = sum([1 if len(sent) > 20 else 0 for sent in content.split('.')])
+    max_count = min(num_sent, 10)
+    questions = generate_questions(content)
+    questions = question_recommender.recommend(questions, user_id, max_count=max_count)
+    return utils.response(200, 'Success', questions)

@@ -53,8 +53,6 @@ def login():
 @app.route('/api/user_answers', methods=['POST'])
 def user_answer():
     user_id = request.headers.get('User-Id')
-    if user_id is None:
-        return utils.response(400, 'Unauthorized')
     data = request.get_json()
     q_count = len(data['questions'])
     correct_count = 0
@@ -76,6 +74,7 @@ def user_answer():
         }
         saved_data.append(tmp_data)
 
-    mongo.db.user_answers.insert_many(saved_data)
+    if user_id is not None:
+        mongo.db.user_answers.insert_many(saved_data)
 
     return utils.response(200, "Success", {'sum': q_count, 'correct': correct_count})

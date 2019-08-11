@@ -104,7 +104,7 @@ class QuestionRecommender:
             random.shuffle(questions)
             return sorted(questions[:max_count], key=lambda x: x['sent_id'])
         
-        # If user has recommending data
+        # If user has recommending data, compute question scores
         weights = data[user_id]
         weights = {key: value for key, value in weights}
         question_scores = []
@@ -118,6 +118,7 @@ class QuestionRecommender:
         question_scores = np.array(question_scores)
         question_scores /= np.sum(question_scores)
 
+        # Choose recommending questions
         recommended = []
         suggest_count= int((1 - 0.4) * max_count)
         rcm_sent_ids, rcm_answers = [], []
@@ -129,8 +130,24 @@ class QuestionRecommender:
                 recommended.append(chosen)
                 rcm_answers.append(chosen['answer'])
                 rcm_sent_ids.append(chosen['sent_id'])
-        remaining = [x for x in questions if x not in recommended]
-        recommended.extend(np.random.choice(remaining, max_count - len(recommended)))
+        
+        # Get remaining questions with different sent_id and random choice
+        remaining = [x for x in questions if x not in recommended \
+                                            and x['answer'] not in rcm_answers \
+                                            and x['sent_id'] not in rcm_sent_ids]
+        random.shuffle(remaining)
+        rcm_sent_ids, rcm_answers, filtered_remaining = [], [], []
+        for question in remaining:
+            if question['answer'] not in rcm_answers and question['sent_id'] not in rcm_sent_ids:
+                filtered_remaining.append(question)
+                rcm_answers.append(question['answer'])
+                rcm_sent_ids.append(question['sent_id'])
+        
+        new_count = max_count - len(recommended)
+        if len(filtered_remaining) < new_count:
+            recommended.extend(filtered_remaining)
+        else:
+            recommended.extend(np.random.choice(filtered_remaining, new_count))
         return sorted(recommended, key=lambda x: x['sent_id'])
         
 
