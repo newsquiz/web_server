@@ -60,6 +60,7 @@ def user_answer():
     for ques_id, u_ans in zip(data['questions'], data['answers']):
         ques = mongo.db.questions.find_one({'id': ques_id})
         r_answer = ques['answer']
+        u_ans = u_ans.lower().strip().replace("  ", " ")
         is_correct = r_answer.lower() == u_ans.lower()
         results.append(is_correct)
         answers.append(r_answer)
