@@ -97,12 +97,36 @@ def generate_questions(content):
 @app.route('/api/generate_questions', methods=['POST'])
 def api_generate_questions():
     user_id = request.headers.get('User-Id')
+    if user_id is None:
+        return utils.response(403, 'Unauthorized')
+
     json_data = request.get_json()
     if 'content' not in json_data or len(json_data['content']) < 20:
         return utils.response(400, 'Content is not valid')
     content = json_data['content']
+
+    article_id = utils.generate_filename()
+    article = {
+        'id': article_id,
+        'type': 'text',
+        'created_time': datetime.datetime.utcnow(),
+        'thumbnail': '',
+        'title': '',
+        'content': content
+    }
+    
+    questions = generate_questions(content)
+    for ques in questions:
+        ques['id'] = utils.generate_filename()
+        ques['article_id'] = article_id
+
+    mongo.db.user_articles.insert_one(article)
+    mongo.db.user_questions.insert_many(questions)
+
     num_sent = sum([1 if len(sent) > 20 else 0 for sent in content.split('.')])
     max_count = min(num_sent, 10)
-    questions = generate_questions(content)
     questions = question_recommender.recommend(questions, user_id, max_count=max_count)
-    return utils.response(200, 'Success', questions)
+    questions = filter(questions, ['answer', 'explain'])
+    article['questions'] = list(questions)
+
+    return utils.response(200, 'Success', article)

@@ -55,10 +55,14 @@ def user_answer():
     user_id = request.headers.get('User-Id')
     data = request.get_json()
     q_count = len(data['questions'])
+    is_user_content = 'is_user_content' in data and data['is_user_content']
     correct_count = 0
     saved_data, results, answers, explains = [], [], [], []
     for ques_id, u_ans in zip(data['questions'], data['answers']):
-        ques = mongo.db.questions.find_one({'id': ques_id})
+        if is_user_content:
+            ques = mongo.db.user_questions.find_one({'id': ques_id})    
+        else:
+            ques = mongo.db.questions.find_one({'id': ques_id})
         r_answer = ques['answer']
         u_ans = u_ans.lower().strip().replace("  ", " ")
         is_correct = r_answer.lower() == u_ans.lower()
@@ -79,7 +83,7 @@ def user_answer():
         }
         saved_data.append(tmp_data)
 
-    if user_id is not None:
+    if user_id is not None and not is_user_content:
         mongo.db.user_answers.insert_many(saved_data)
 
     return utils.response(200, "Success", {
