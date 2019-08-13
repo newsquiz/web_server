@@ -95,6 +95,16 @@ class QuestionRecommender:
         pickle.dump(decoded_item_weights, open(constants.Q_RECOMMENDER_MODEL, 'wb'))
 
 
+    def filter_unique(self, items):
+        rcm_sent_ids, rcm_answers, filtered_remaining = [], [], []
+        for question in items:
+            if question['answer'] not in rcm_answers and question['sent_id'] not in rcm_sent_ids:
+                filtered_remaining.append(question)
+                rcm_answers.append(question['answer'])
+                rcm_sent_ids.append(question['sent_id'])
+        return filtered_remaining
+
+
     def recommend(self, questions, user_id=None, max_count=5, new_ratio=0.4):
         if not os.path.exists(constants.Q_RECOMMENDER_MODEL):
             data = {}
@@ -102,6 +112,7 @@ class QuestionRecommender:
             data = pickle.load(open(constants.Q_RECOMMENDER_MODEL, 'rb'))
         if user_id not in data or len(questions) < max_count:
             random.shuffle(questions)
+            questions = self.filter_unique(questions)
             return sorted(questions[:max_count], key=lambda x: x['sent_id'])
         
         # If user has recommending data, compute question scores
@@ -136,18 +147,12 @@ class QuestionRecommender:
                                             and x['answer'] not in rcm_answers \
                                             and x['sent_id'] not in rcm_sent_ids]
         random.shuffle(remaining)
-        rcm_sent_ids, rcm_answers, filtered_remaining = [], [], []
-        for question in remaining:
-            if question['answer'] not in rcm_answers and question['sent_id'] not in rcm_sent_ids:
-                filtered_remaining.append(question)
-                rcm_answers.append(question['answer'])
-                rcm_sent_ids.append(question['sent_id'])
+        remaining = self.filter_unique(remaining)
         
         new_count = max_count - len(recommended)
-        recommended.extend(filtered_remaining[:new_count])
+        recommended.extend(remaining[:new_count])
         return sorted(recommended, key=lambda x: x['sent_id'])
         
-
 
 def get_article_questions(article_id):
     from api_server import mongo
