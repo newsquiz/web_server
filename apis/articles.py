@@ -4,6 +4,8 @@ import pymongo
 from flask import request
 import datetime
 import utils
+import requests
+from configs import constants
 
 
 def get_querystr(key, default):
@@ -91,7 +93,9 @@ def recommend():
 
 
 def generate_questions(content):
-    return list(mongo.db.questions.find().skip(0).limit(50))
+    response = requests.post(constants.CORE_ADDR, json={"content": content})
+    questions = dict(response.json())['result']
+    return questions
 
 
 @app.route('/api/generate_questions', methods=['POST'])
