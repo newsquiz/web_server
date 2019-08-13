@@ -50,6 +50,14 @@ def get_article_details(article_id):
     for key in article:
         if key not in ['_id']:
             ret[key] = article[key]
+    if user_id is not None:
+        user_clicked = {
+            'a_id': article_id,
+            'clicked_time': datetime.datetime.utcnow(),
+            'u_id': user_id,
+            'topic': article['topic']
+        }
+        mongo.db.user_click.insert_one(user_clicked)
     return utils.response(200, 'Success', dict(ret))
 
 
