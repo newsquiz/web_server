@@ -103,7 +103,8 @@ def recommend():
         article_ids = list(article_recommender.recommend(user_id, num=num_item))
         articles = mongo.db.articles.find({'id': {'$in': article_ids}})
     else:
-        articles = mongo.db.articles.aggregate([{'$sample': {'size': num_item}}])
+        articles = mongo.db.articles.aggregate([{'$sample': {'size': num_item}}, \
+                                                {'$match': {'flag': 1}}])
     
     data = list(filter(articles, ['content', '_id', 'audio', 'content_raw']))
     return utils.response(200, 'Success', data)

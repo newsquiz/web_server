@@ -76,8 +76,15 @@ class ArticleRecommender:
         # print('user ',u, 'has clicked on ', len(clicked_articles), ' articles')
         clicked_topics = list(set(clicked_topics))
 
-        all_unclicked_articles_by_topics = self.db.articles.find({'topic': {'$in': clicked_topics}, 'id': {
-                                                                 '$nin': clicked_articles}}, {'id': 1}).sort([('created_time', pymongo.DESCENDING)]).limit(num*2)
+        all_unclicked_articles_by_topics = self.db.articles.find({
+                                                                'topic': {'$in': clicked_topics}, 
+                                                                'id': {'$nin': clicked_articles},
+                                                                'flag': 1
+                                                            }, {
+                                                                'id': 1
+                                                            }) \
+                                                            .sort([('created_time', pymongo.DESCENDING)]) \
+                                                            .limit(num*2)
         articles_for_random = [x['id']
                                for x in all_unclicked_articles_by_topics]
         # print('number of articles for recommending: ', len(articles_for_random))
