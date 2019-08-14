@@ -2,7 +2,10 @@ import pymongo
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy import sparse
-from configs import constants
+try:
+    from configs import constants
+except:
+    import constants
 import pickle
 import os
 import itertools
@@ -16,7 +19,7 @@ class ArticleRecommender:
             client = pymongo.MongoClient(mongo_uri)
             self.db = client[mongo_db]
         self.uuCF = uuCF  # user-user (1) or article-article (0) CF
-        self.model_dir = 'recommendation/models/'
+        self.model_dir = constants.A_RECOMMENDER_MODEL
         self.Y_data = None
         self.Y_data_num = None
         self.k = k  # number of neighborhood

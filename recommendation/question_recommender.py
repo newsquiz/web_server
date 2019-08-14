@@ -87,7 +87,10 @@ class QuestionRecommender:
         for key in item_weights:
             value = item_weights[key]
             w_sum = sum(value)
-            value = [x / w_sum for x in value]
+            if w_sum == 0:
+                value = [1.0 / len(value) for v in value]
+            else:
+                value = [x / w_sum for x in value]
             item_weights[key] = value
         decoded_item_weights = {self.IDX2USER[u_idx]: [(self.IDX2ITEM[item_idx], weight) \
                                 for item_idx, weight in enumerate(item_weights[u_idx])] \
