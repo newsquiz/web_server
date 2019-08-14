@@ -86,7 +86,7 @@ class ArticleRecommender:
                                                             }, {
                                                                 'id': 1
                                                             }) \
-                                                            .sort([('created_time', pymongo.DESCENDING)]) \
+                                                            .sort([('publish_time', pymongo.DESCENDING)]) \
                                                             .limit(num*2)
         articles_for_random = [x['id']
                                for x in all_unclicked_articles_by_topics]

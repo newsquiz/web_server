@@ -31,7 +31,7 @@ def get_topic_articles(topic):
     topic_search = {} if topic == 'new' else {'topic': topic}
     topic_search['flag'] = 1
     articles = mongo.db.articles.find(topic_search) \
-                    .sort([('created_time', pymongo.DESCENDING)]) \
+                    .sort([('publish_time', pymongo.DESCENDING)]) \
                     .skip(start) \
                     .limit(max_count)
     data = list(filter(articles, ['content', '_id', 'audio', 'content_raw']))
@@ -85,7 +85,7 @@ def search():
             }
         })
     articles = mongo.db.articles.find({'$or': conditions, 'flag': 1}) \
-                                .sort([('created_time', pymongo.DESCENDING)]) \
+                                .sort([('publish_time', pymongo.DESCENDING)]) \
                                 .skip(start) \
                                 .limit(max_count)
     
@@ -138,6 +138,7 @@ def api_generate_questions():
             'id': article_id,
             'type': 'text',
             'created_time': datetime.datetime.utcnow(),
+            'publish_time': datetime.datetime.utcnow(),
             'thumbnail': '',
             'title': '',
             'content': content
@@ -158,3 +159,30 @@ def api_generate_questions():
     article['questions'] = list(questions)
 
     return utils.response(200, 'Success', article)
+
+
+def n_previous_day(n):
+    return datetime.datetime.now() - datetime.timedelta(days=n)
+
+
+@app.route('/api/featured_articles', methods=['GET'])
+def featured_articles():
+    num_items = min(int(get_querystr('max_count', 10)), 50)
+    result = list(mongo.db.user_click.aggregate([
+        { '$match': { 'clicked_time': {'$gt': n_previous_day(3)} } },
+        { '$group': { '_id': '$a_id', 'total': { '$sum': 1 } } },
+        { '$sort': { 'total': -1 }},
+        { '$limit': 50}
+    ]))
+    popular_ids = [x['_id'] for x in result[:num_items]]
+    popular_items = list(mongo.db.articles.find({'id': {'$in': popular_ids}, 'flag': 1}))
+
+    remaining_count = num_items - len(popular_ids)
+    if remaining_count > 0:
+        articles = mongo.db.articles.find({'id': {'$nin': popular_ids}, 'flag': 1}) \
+                                    .sort([('publish_time', pymongo.DESCENDING)]) \
+                                    .limit(remaining_count)
+        popular_items.extend(list(articles))
+    
+    data = list(filter(popular_items, ['content', '_id', 'audio', 'content_raw']))
+    return utils.response(200, 'Success', data)

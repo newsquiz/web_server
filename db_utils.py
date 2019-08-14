@@ -70,35 +70,40 @@ def save_article(article):
     print("Saved article: ", article['title'])
 
 
+def n_previous_day(n):
+    return datetime.datetime.now() - datetime.timedelta(days=n)
 
 
 if __name__ == '__main__':
-    sample_input = {
-        "topic": "society",
-        "thumbnail": "data/xb.jpg",
-        "type": "audio",
-        "title": "How to spend money after winning hackathon challenge?",
-        "level": "medium",
-        "content": "<div></div>",
-        "audio": "data/die.wav",
-        "publisher":"bbc",
-        "source_url": "https://www.bbc.co.uk/",
-        "questions": [{
-            "content": "Who is president of the USA",
-            "options": [
-                "Bui Manh Thang",
-                "Luong Tung Dung",
-                "Phan Ngoc Lan",
-                "Bui Duy Tuan"
-            ],
-            "answer": "Bui Manh Thang",
-            "type": "choice"
-        }]
-    }
-    # save_article(sample_input)
-    tags = db.questions.find({}, {'type': 1})
-    all_ai = []
-    for item in tags:
-        all_ai.append(item['type'])
-    all_ai = set(all_ai)
-    print((all_ai))
+    num_items = min(10, 50)
+    yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+    result = list(db.user_click.aggregate([
+        { '$match': { 'clicked_time': {'$gt': n_previous_day(3)} } },
+        { '$group': { '_id': '$a_id', 'total': { '$sum': 1 } } },
+        { '$sort': { 'total': -1 }},
+        { '$limit': 50}
+    ]))
+    popular_ids = [x['_id'] for x in result[:num_items]]
+    popular_items = list(db.articles.find({'id': {'$in': popular_ids}, 'flag': 1}))
+
+    remaining_count = num_items - len(popular_ids)
+    if remaining_count > 0:
+        articles = db.articles.aggregate([
+            {'$sample': {'size': remaining_count}},
+            {'$match': {
+                    'id': {'$nin': popular_ids}, 
+                    'flag': 1
+                    # 'publish_time': {'$gt': n_previous_day(30)}
+                }
+            }
+        ])
+        popular_items.extend(list(articles))
+    # tags = db.questions.distinct('article_id', {})
+    # articles = db.articles.find({'flag': 1})
+    # print(len(list(articles)))
+    # all_ai = []
+    # for item in tags:
+    #     all_ai.append(item['type'])
+    # all_ai = set(all_ai)
+    print(popular_ids)
+    print([x['id'] for x in popular_items])
