@@ -1,5 +1,5 @@
 from bson.objectid import ObjectId
-from api_server import app, mongo, question_recommender
+from api_server import app, mongo, question_recommender, article_recommender
 import pymongo
 from flask import request
 import datetime
@@ -94,8 +94,17 @@ def search():
 
 @app.route('/api/recommended_articles', methods=['GET'])
 def recommend():
+    user_id = request.headers.get('User-Id')
     num_item = int(get_querystr('num_item', 3))
-    articles = mongo.db.articles.aggregate([{'$sample': {'size': num_item}}])
+
+    if user_id is None: user_id = ''
+    user = mongo.db.users.find_one({'id': user_id})
+    if user is not None:
+        article_ids = list(article_recommender.recommend(user_id, num=num_item))
+        articles = mongo.db.articles.find({'id': {'$in': article_ids}})
+    else:
+        articles = mongo.db.articles.aggregate([{'$sample': {'size': num_item}}])
+    
     data = list(filter(articles, ['content', '_id', 'audio', 'content_raw']))
     return utils.response(200, 'Success', data)
 

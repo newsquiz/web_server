@@ -1,4 +1,5 @@
 import json
+from configs import constants
 from datetime import datetime
 from flask import Flask, send_from_directory
 from flask_cors import CORS
@@ -6,6 +7,7 @@ from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
 from bson.objectid import ObjectId
 from recommendation.question_recommender import QuestionRecommender
+from recommendation.article_recommender import ArticleRecommender
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -26,6 +28,7 @@ mongo = PyMongo(app)
 bcrypt = Bcrypt(app)
 app.json_encoder = JSONEncoder
 question_recommender = QuestionRecommender()
+article_recommender = ArticleRecommender(mongo_uri=constants.MONGO_URI, mongo_db=constants.MONGO_DB)
 
 from apis.articles import *
 from apis.users import *
