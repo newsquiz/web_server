@@ -5,6 +5,7 @@ from flask import request
 import datetime
 import utils
 import requests
+import hashlib
 from configs import constants
 
 
@@ -125,25 +126,30 @@ def api_generate_questions():
     json_data = request.get_json()
     if 'content' not in json_data or len(json_data['content']) < 20:
         return utils.response(400, 'Content is not valid')
-    content = json_data['content']
-
-    article_id = utils.generate_filename()
-    article = {
-        'id': article_id,
-        'type': 'text',
-        'created_time': datetime.datetime.utcnow(),
-        'thumbnail': '',
-        'title': '',
-        'content': content
-    }
+    content = json_data['content'].strip()
+    content_hash = str(hashlib.sha256(content.encode('utf-8')).hexdigest()[:32]).strip()
     
-    questions = generate_questions(content)
-    for ques in questions:
-        ques['id'] = utils.generate_filename()
-        ques['article_id'] = article_id
+    article = mongo.db.user_articles.find_one({'id': content_hash})
+    if article is not None:
+        questions = list(mongo.db.user_questions.find({'article_id': content_hash}))
+    else:
+        article_id = content_hash
+        article = {
+            'id': article_id,
+            'type': 'text',
+            'created_time': datetime.datetime.utcnow(),
+            'thumbnail': '',
+            'title': '',
+            'content': content
+        }
+        
+        questions = generate_questions(content)
+        for ques in questions:
+            ques['id'] = utils.generate_filename()
+            ques['article_id'] = article_id
 
-    mongo.db.user_articles.insert_one(article)
-    mongo.db.user_questions.insert_many(questions)
+        mongo.db.user_articles.insert_one(article)
+        mongo.db.user_questions.insert_many(questions)
 
     num_sent = sum([1 if len(sent) > 20 else 0 for sent in content.split('.')])
     max_count = min(num_sent, 10)
