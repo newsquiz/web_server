@@ -1,5 +1,6 @@
 import os
 import uuid
+import random
 from flask import jsonify
 from datetime import datetime
 from configs import constants
@@ -8,6 +9,13 @@ from configs import constants
 def generate_filename():
     fname = uuid.uuid5(uuid.NAMESPACE_OID, str(datetime.now()))
     return str(fname).replace('-', '')
+
+
+def generate_numid():
+    numid = ""
+    for i in range(5):
+        numid += str(random.randint(0, 9))
+    return numid
 
 
 def get_save_path(filename):
